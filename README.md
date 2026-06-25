@@ -12,24 +12,40 @@ A simple terminal-based confidence scorer app. It is meant as a small learning p
 ## Agent flow
 
 ```mermaid
-graph TD
-    A([User Query]) --> B[input_node]
-    B --> C[agent_node]
-    C -->|tool_call| D[tools_node]
-    D -->|search_all| E[Web + arXiv Search]
-    D -->|extract_claims| F[Claim Extraction via LLM]
-    D -->|consolidate_claims| G[Claim Deduplication via LLM]
-    D -->|classify_all_stances| H[Stance Classification via LLM]
-    D -->|score_confidence| I[Confidence Scoring]
-    D -->|format_report| J[Report Generation]
-    E --> K{Human Review}
-    K -->|approved| C
-    K -->|rejected| L([End])
-    F --> C
-    G --> C
-    H --> C
-    I --> C
-    J --> L
+%%{init: {'theme': 'neutral'}}%%
+flowchart TB
+    Q([User Query])
+
+    subgraph LG [LangGraph Orchestrator]
+        direction TB
+        IN[/input_node/]
+        AG[[agent_node]]
+        TL[[tools_node]]
+        HN{human_node}
+
+        IN --> AG
+        AG -->|emits tool_call| TL
+        TL -->|returns result| AG
+        AG -->|sources ready| HN
+        HN -->|approved| AG
+    end
+
+    subgraph TASKS [Pipeline Stages]
+        direction TB
+        S1[1. Web + arXiv Search]
+        S2[2. Extract Claims]
+        S3[3. Consolidate Claims]
+        S4[4. Classify Stances]
+        S5[5. Score Confidence]
+        S6[6. Generate Report]
+
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    end
+
+    Q --> IN
+    TL <-..->|dispatches| TASKS
+    HN -->|rejected| STOP([End])
+    S6 --> STOP
 ```
 
 ## Tech stack
