@@ -13,7 +13,7 @@ A simple terminal-based confidence scorer app. It is meant as a small learning p
 
 ```mermaid
 graph TD
-    A[User Query] --> B[input_node]
+    A([User Query]) --> B[input_node]
     B --> C[agent_node]
     C -->|tool_call| D[tools_node]
     D -->|search_all| E[Web + arXiv Search]
@@ -24,16 +24,12 @@ graph TD
     D -->|format_report| J[Report Generation]
     E --> K{Human Review}
     K -->|approved| C
-    K -->|rejected| L[End]
+    K -->|rejected| L([End])
     F --> C
     G --> C
     H --> C
     I --> C
-    J --> L[End]
-
-    style A fill:#e3f2fd
-    style K fill:#fff3e0
-    style L fill:#e8f5e9
+    J --> L
 ```
 
 ## Tech stack
