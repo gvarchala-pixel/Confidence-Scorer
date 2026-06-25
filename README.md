@@ -59,13 +59,13 @@ If `uv sync` creates a `.venv`, the `source` command activates the virtual envir
 Use the provided CLI entrypoint. For example:
 
 ```bash
-python -m aletheia.cli "Is regular exercise linked to better memory?"
+python -m confidence_scorer.cli "Is regular exercise linked to better memory?"
 ```
 
 If the repository installs a script entrypoint, you can also run:
 
 ```bash
-uv run aletheia "Is regular exercise linked to better memory?"
+uv run confidence_scorer "Is regular exercise linked to better memory?"
 ```
 
 ## Optional search provider
