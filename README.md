@@ -12,40 +12,49 @@ A simple terminal-based confidence scorer app. It is meant as a small learning p
 ## Agent flow
 
 ```mermaid
-%%{init: {'theme': 'neutral'}}%%
-flowchart TB
-    Q([User Query])
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#E8F4FD', 'primaryTextColor': '#1a1a2e', 'primaryBorderColor': '#5B9BD5', 'lineColor': '#5B9BD5', 'secondaryColor': '#FFF3E0', 'tertiaryColor': '#E8F5E9'}}}%%
+flowchart TD
+    Q([" User Query "]):::input
 
-    subgraph LG [LangGraph Orchestrator]
-        direction TB
-        IN[/input_node/]
-        AG[[agent_node]]
-        TL[[tools_node]]
-        HN{human_node}
-
-        IN --> AG
-        AG -->|emits tool_call| TL
-        TL -->|returns result| AG
-        AG -->|sources ready| HN
-        HN -->|approved| AG
+    subgraph input_node [" input_node — Validate & Initialize "]
+        I1["Parse and validate query"]
+        I2["Create HumanMessage"]
+        I1 --> I2
     end
 
-    subgraph TASKS [Pipeline Stages]
-        direction TB
-        S1[1. Web + arXiv Search]
-        S2[2. Extract Claims]
-        S3[3. Consolidate Claims]
-        S4[4. Classify Stances]
-        S5[5. Score Confidence]
-        S6[6. Generate Report]
-
-        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    subgraph agent_node [" agent_node — Route Pipeline Stage "]
+        A1["Detect current stage via state"]
+        A2["Emit tool_call for next step"]
+        A1 --> A2
     end
 
-    Q --> IN
-    TL <-..->|dispatches| TASKS
-    HN -->|rejected| STOP([End])
-    S6 --> STOP
+    subgraph tools_node [" tools_node — Execute Pipeline Steps "]
+        T1["search_all — Web + arXiv search"]
+        T2["extract_claims — LLM claim extraction"]
+        T3["consolidate_claims — Deduplicate via LLM"]
+        T4["classify_all_stances — Stance classification"]
+        T5["score_confidence — Confidence scoring"]
+        T6["format_report — Generate final report"]
+    end
+
+    subgraph human_node [" human_node — Human Review "]
+        H1["Show sources summary"]
+        H2{"Approve / Reject / Redirect"}
+    end
+
+    DONE([" End "]):::done
+
+    Q --> input_node
+    input_node --> agent_node
+    agent_node -->|"tool_call"| tools_node
+    tools_node -->|"result"| agent_node
+    agent_node -->|"sources ready"| human_node
+    human_node -->|"approved"| agent_node
+    human_node -->|"rejected"| DONE
+    agent_node -->|"report complete"| DONE
+
+    classDef input fill:#DCEEFB,stroke:#2E86C1,color:#1a1a2e,stroke-width:2px
+    classDef done fill:#D5F5E3,stroke:#27AE60,color:#1a1a2e,stroke-width:2px
 ```
 
 ## Tech stack
